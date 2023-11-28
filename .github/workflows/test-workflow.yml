@@ -7,7 +7,7 @@ on:
       - test  
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -17,12 +17,17 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v2
         with:
-          node-version: '14'  
+          node-version: '14'
 
       - name: Install dependencies
         run: npm install
 
-      - name: Run test using Jest  
+      - name: Run tests using Jest  
         run: npm test
 
-      # Add deployment steps here if needed
+      - name: Build and push Docker image
+        run: |
+          docker build -t iamguil/devops-take-home .
+          docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+          docker tag iamguil/devops-take-home iamguil/test-repo:latest
+          docker push iamguil/test-repo:latest
