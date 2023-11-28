@@ -32,6 +32,15 @@ jobs:
           docker tag ${{ secrets.DOCKER_USERNAME }}/devops-take-home ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_IMAGE_NAME }}:latest
           docker push ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_IMAGE_NAME }}:latest
 
+      - name: Install Azure CLI
+        run: |
+          curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+
+      - name: Debug Azure CLI version
+        run: az --version
+        env:
+          AZURE_CORE_COLLECT_TELEMETRY: "no"
+
       - name: Log in to Azure
         uses: azure/login@v1
         with:
