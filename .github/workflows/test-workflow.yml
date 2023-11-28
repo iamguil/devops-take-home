@@ -27,7 +27,23 @@ jobs:
 
       - name: Build and push Docker image
         run: |
-          docker build -t iamguil/devops-take-home .
-          docker login -u iamguil -p ${{ secrets.DOCKER_ACCESS_TOKEN }}
-          docker tag iamguil/devops-take-home iamguil/test-repo:latest
-          docker push iamguil/test-repo:latest
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/devops-take-home .
+          docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_ACCESS_TOKEN }}
+          docker tag ${{ secrets.DOCKER_USERNAME }}/devops-take-home ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_IMAGE_NAME }}:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_IMAGE_NAME }}:latest
+
+      - name: Log in to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Set Azure subscription
+        run: az account set --subscription "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
+
+      - name: Configure Docker image source
+        run: |
+          az webapp config container set --name ${{ secrets.AZURE_WEB_APP_NAME }} --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} --docker-custom-image-name ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_IMAGE_NAME }}:latest --docker-registry-server-url https://index.docker.io --docker-registry-server-user ${{ secrets.DOCKER_USERNAME }} --docker-registry-server-password ${{ secrets.DOCKER_ACCESS_TOKEN }} --multicontainer-config-type "DOCKERCOMPOSE" --multicontainer-config-file "docker-compose.yml" --multicontainer-config-name "${{ secrets.AZURE_PLAN_NAME }}"
+
+      - name: Update Azure Web App
+        run: |
+          az webapp config container set --name ${{ secrets.AZURE_WEB_APP_NAME }} --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} --multicontainer-config-type "DOCKERCOMPOSE" --multicontainer-config-file "docker-compose.yml" --multicontainer-config-name "${{ secrets.AZURE_PLAN_NAME }}"
