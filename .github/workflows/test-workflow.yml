@@ -28,6 +28,6 @@ jobs:
       - name: Build and push Docker image
         run: |
           docker build -t iamguil/devops-take-home .
-          docker login -u $DOCKER_USERNAME -p $DOCKER_ACCESS_TOKEN
+          docker login -u iamguil -p ${{ secrets.DOCKER_ACCESS_TOKEN }}
           docker tag iamguil/devops-take-home iamguil/test-repo:latest
           docker push iamguil/test-repo:latest
